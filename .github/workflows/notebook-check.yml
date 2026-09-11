@@ -1,0 +1,50 @@
+name: Notebook Check
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "**.ipynb"
+      - "**.pdf"
+      - "README.md"
+      - "requirements.txt"
+      - ".github/workflows/notebook-check.yml"
+  pull_request:
+    paths:
+      - "**.ipynb"
+      - "**.pdf"
+      - "README.md"
+      - "requirements.txt"
+      - ".github/workflows/notebook-check.yml"
+
+jobs:
+  execute-notebook:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Validate project files
+        run: |
+          test -f "DS502 - Final Project Code.ipynb"
+          test -f "DS502-Final Project Report.pdf"
+          test -f "DS502 - Final Project Presentation.pdf"
+
+      - name: Execute notebook
+        env:
+          MPLBACKEND: Agg
+        run: |
+          jupyter nbconvert --to notebook --execute --ExecutePreprocessor.timeout=1200 --output executed_final_project.ipynb "DS502 - Final Project Code.ipynb"
